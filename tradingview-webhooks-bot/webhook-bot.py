@@ -36,16 +36,17 @@ def feed_store(data):
     # {'key': 'key', 'exchange': 'CME', 'ticker': 'BTC1!', 'dt': '2022-02-15T14:43:53Z', 'interval': '60', 'open': 44365, 'high': 44620, 'low': 44285, 'close': 44455, 'mean': 43009.0, 'inner_sky': 45224.5, 'moon': 46657.5, 'outer_sky': 48090.5, 'shore': 41057.0, 'start_of_underworld': 37664.0, 'end_of_underworld': 34270.5, 'buoy': 39360.5, 'beach': 42442.0, 'marker': 39054.0}
     bucket_name = f'{data["exchange"]}_{data["ticker"]}_{data["signal"]}_{period}/1Min/SIGNAL'
 
-    # open,high,low,close,mean,inner_sky,moon,outer_sky,shore,start_of_underworld,end_of_underworld,buoy,beach,marker
+    # \create CME_BTC1!_EMASAR_1H/1Min/SIGNAL:Symbol/Timeframe/AttributeGroup open,high,low,close,mean,inner_sky,moon,outer_sky,shore,start_of_underworld,end_of_underworld,buoy,beach,marker/float32:Epoch/int64 fixed
     epoch = int(ciso8601.parse_datetime(data['dt']).timestamp())
     rec_chunks = np.array([(epoch, data['open'], data['high'], data['low'], data['close'], data['mean'], data['inner_sky'], data['moon'], data['outer_sky'], data['shore'], data['start_of_underworld'], data['end_of_underworld'], data['buoy'], data['beach'], data['marker'])],
-                          dtype=[('Epoch', 'i8'), ('open', '<f8'), ('high', '<f8'), ('low', '<f8'), ('close', '<f8'), ('mean', '<f8'), ('inner_sky', '<f8'), ('moon', '<f8'), ('outer_sky', '<f8'), ('shore', '<f8'), ('start_of_underworld', '<f8'), ('end_of_underworld', '<f8'), ('buoy', '<f8'),
-                                 ('beach', '<f8'), ('marker', '<f8')])
+                          dtype=[('Epoch', 'i8'), ('open', '<f4'), ('high', '<f4'), ('low', '<f4'), ('close', '<f4'), ('mean', '<f4'), ('inner_sky', '<f4'), ('moon', '<f4'), ('outer_sky', '<f4'), ('shore', '<f4'), ('start_of_underworld', '<f4'), ('end_of_underworld', '<f4'), ('buoy', '<f4'),
+                                 ('beach', '<f4'), ('marker', '<f4')])
     rec_chunks = rec_chunks.view(np.recarray)
 
     response = cli.write(rec_chunks, bucket_name)
     print("sent write request to %s:\n%s\n" % (cli.endpoint, response))
-    print("finished writing %d records to %s" % (rec_chunks.size, bucket_name))
+    if response and 'responses' in response and not response['responses']:
+        print("finished writing %d records to %s" % (rec_chunks.size, bucket_name))
 
 
 @app.route('/webhook', methods=['POST'])
