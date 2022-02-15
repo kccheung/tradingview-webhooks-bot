@@ -1,4 +1,4 @@
-from auth import get_token
+from ..auth import get_token
 
 """
 This function will take a lot of the tedious work out of generating alert messages!
