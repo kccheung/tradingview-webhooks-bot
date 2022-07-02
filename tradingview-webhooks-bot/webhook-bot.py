@@ -32,6 +32,8 @@ def feed_store(data):
     period = 'NA'
     if data['interval'] == '60':
         period = '1H'
+    elif data['interval'] == '240':
+        period = '4H'
     # CME_BTC!_EMASAR_1H/1Min/SIGNAL
     # {'key': 'key', 'exchange': 'CME', 'ticker': 'BTC1!', 'dt': '2022-02-15T14:43:53Z', 'interval': '60', 'open': 44365, 'high': 44620, 'low': 44285, 'close': 44455, 'mean': 43009.0, 'inner_sky': 45224.5, 'moon': 46657.5, 'outer_sky': 48090.5, 'shore': 41057.0, 'start_of_underworld': 37664.0, 'end_of_underworld': 34270.5, 'buoy': 39360.5, 'beach': 42442.0, 'marker': 39054.0}
     bucket_name = f'{data["exchange"]}_{data["ticker"]}_{data["signal"]}_{period}/1Min/SIGNAL'
