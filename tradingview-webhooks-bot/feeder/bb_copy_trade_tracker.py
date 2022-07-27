@@ -16,7 +16,7 @@ prev = {}
 token = os.environ.get("PUSHOVER_API_TOKEN")
 # print(token)
 init(token)
-
+leadermark = os.environ.get("LEADERMARK")
 keyy = os.environ.get("PUSHOVER_USER_KEY")
 # print(keyy)
 po_client = Client(keyy)
@@ -30,7 +30,7 @@ def track(skip=False):
     now_utc = datetime.now(timezone.utc)
     # today = now_utc.strftime("%Y-%m-%d")
     # request_url = f"https://api2.byapis.com/fapi/beehive/public/v1/common/leader-history?timeStamp={int(time.time()*1000)}&page=1&pageSize=20&leaderMark=bTTxdRatXQ6XkYDX8mHgyw%3D%3D"
-    request_url = f"https://api2.byapis.com/fapi/beehive/public/v1/common/order/list-detail?timeStamp={int(time.time()*1000)}&leaderMark=bTTxdRatXQ6XkYDX8mHgyw%3D%3D"
+    request_url = f"https://api2.byapis.com/fapi/beehive/public/v1/common/order/list-detail?timeStamp={int(time.time()*1000)}&leaderMark={leadermark}"
     # request_url = f"https://api2.byapis.com/fapi/beehive/public/v1/common/position/list?timeStamp={int(time.time()*1000)}&leaderMark=bTTxdRatXQ6XkYDX8mHgyw%3D%3D"
     # print(request_url)
     resp = requests.get(request_url, headers=headers)
