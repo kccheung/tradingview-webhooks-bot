@@ -25,7 +25,7 @@ def get_funding(symbol='btc'):
     today = now_utc.strftime("%Y-%m-%d")
     request_url = f"https://api.laevitas.ch/charts/futures/weighted_funding/{symbol}?start={today}&end={today}"
     print(request_url)
-    resp = requests.get(request_url, headers=headers)
+    resp = requests.get(request_url, headers=headers, timeout=(5, 5))
     data = resp.json()
 
     # print(data)

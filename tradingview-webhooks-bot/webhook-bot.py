@@ -30,19 +30,28 @@ def root():
 
 
 OBDC_TEMPLATE = r'Alert: OBDC \((?P<depth>.*)%\) \> -99 \((?P<paira>.*)\) (?P<alert>.*)(?P<pairb>.*) on (?P<exchange>.*)Price: (?P<price>.*) • Order Book Depth Cumulative \(aggregation\) \((?P<depthb>.*)\)Ratio: (?P<ratio>.*) \> -99'
+FUNDING_AGG_TEMPLATE = r'Alert: funding_dataSide: Long \U0001f7e2(?P<pair>.*) on BinancePrice: (?P<price>.*) • Funding Rates \(aggregation\)Funding Rate: (?P<rate>.*) \> -100 • Funding Rates Predicted \(aggregation\)Funding Rate Predicted: (?P<ratep>.*) \> -100'
+"""
+Alert: funding_data
+Side: Long 🟢
 
-
+BTC/USDT on Binance
+Price: 20281
+ • Funding Rates (aggregation)
+Funding Rate: -0.0067851 > -100
+"""
 def feed_store(data):
     rec_chunks = None
     if 'trdr' in data:
         # \create BTCUSD_OBDC/1Sec/SIGNAL:Symbol/Timeframe/AttributeGroup depth,price,ratio/float32:Epoch/int64 fixed
-        bucket_name = f'BTCUSD_OBDC/1Sec/SIGNAL'
         epoch = data['ts']
         msg = data['msg'].replace('\n', '')
-        m3 = re.match(OBDC_TEMPLATE, msg)
         # print(msg)
+        m3 = re.match(OBDC_TEMPLATE, msg)
+        m4 = re.match(FUNDING_AGG_TEMPLATE, msg)
         # print(m3)
         if m3:
+            bucket_name = 'BTCUSD_OBDC/1Sec/SIGNAL'
             # pair = m3.group('paira').replace('USDT', 'USD').replace('BTC', 'XBT').replace('/', '')
             depth = float(m3.group('depth').replace('%', ''))
             price = float(m3.group('price'))
@@ -50,6 +59,26 @@ def feed_store(data):
             print(f'{depth}, {price}, {ratio}')
             rec_chunks = np.array([(epoch, depth, price, ratio)],
                                   dtype=[('Epoch', 'i8'), ('depth', '<f4'), ('price', '<f4'), ('ratio', '<f4')])
+        elif m4:
+            pair = m4.group('pair').replace('/', '')
+            # \create BTCUSDT_FUNDING_AGG/1Sec/SIGNAL:Symbol/Timeframe/AttributeGroup price,rate/float32:Epoch/int64 fixed
+            # \create BTCUSDT_FUNDING_PREDICTED_AGG/1Sec/SIGNAL:Symbol/Timeframe/AttributeGroup price,rate/float32:Epoch/int64 fixed
+            bucket_name = f'{pair}_FUNDING_AGG/1Sec/SIGNAL'
+            bucket_name2 = f'{pair}_FUNDING_PREDICTED_AGG/1Sec/SIGNAL'
+            price = float(m4.group('price'))
+            rate = float(m4.group('rate'))
+            rate_p = float(m4.group('ratep'))
+            print(f'{pair}, {price}, {rate}, {rate_p}')
+            rec_chunks = np.array([(epoch, price, rate)],
+                                  dtype=[('Epoch', 'i8'), ('price', '<f4'), ('rate', '<f4')])
+
+            rec_chunks2 = np.array([(epoch, price, rate_p)],
+                                   dtype=[('Epoch', 'i8'), ('price', '<f4'), ('rate', '<f4')])
+            rec_chunks2 = rec_chunks2.view(np.recarray)
+            response = cli.write(rec_chunks2, bucket_name2)
+            print("sent write request to %s:\n%s\n" % (cli.endpoint, response))
+            if response and 'responses' in response and not response['responses']:
+                print("finished writing %d records to %s" % (rec_chunks2.size, bucket_name2))
     else:
         # tradingview alert
         period = 'NA'

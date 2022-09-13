@@ -8,6 +8,9 @@ import pymarketstore as pymkts
 import requests
 from requests.structures import CaseInsensitiveDict
 
+import logging
+logging.basicConfig(level=logging.DEBUG)
+
 
 cli = pymkts.Client(endpoint="http://localhost:5993/rpc")
 BUCKET_NAME = "WEIGHTED_FUNDING_%s/5Min/SIGNAL"
@@ -21,12 +24,13 @@ def get_funding(symbol='btc'):
     headers["Accept"] = "application/json, text/plain, */*"
     headers["Referer"] = "https://app.laevitas.ch/"
     headers[
-        "Authorization"] = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImNodWJhbyIsImlkIjoiNTI0OTkxYzQtMWM1NS00MDZjLThmYmYtYTMwNWQ5ZThkZTA5IiwiZW1haWwiOiJrY2NoZXVuZzA2MjVAZ21haWwuY29tIiwicm9sZSI6IkNMSUVOVCIsImltYWdlIjoiaHR0cHM6Ly9saDMuZ29vZ2xldXNlcmNvbnRlbnQuY29tL2EtL0FPaDE0R2lVaHpaMmpUTXE1QW05OHNsTnA5U2VfSEkxcU9tN2ZXTFJyNmE1SFE9czk2LWMiLCJmaXJzdE5hbWUiOiJEYXZpZCBDIiwibGFzdE5hbWUiOiJDIiwiaWF0IjoxNjU2NjY2NjQ0LCJleHAiOjE2NTkyNTg2NDR9.Lnv4zTYrhJ2CpYKJqJxeFbXrqe25FnKj4VgWlEzdi9w"
+        "Authorization"] = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImNodWJhbyIsImlkIjoiNTI0OTkxYzQtMWM1NS00MDZjLThmYmYtYTMwNWQ5ZThkZTA5IiwiZW1haWwiOiJrY2NoZXVuZzA2MjVAZ21haWwuY29tIiwicm9sZSI6IkNMSUVOVCIsImltYWdlIjoiaHR0cHM6Ly9saDMuZ29vZ2xldXNlcmNvbnRlbnQuY29tL2EtL0FPaDE0R2lVaHpaMmpUTXE1QW05OHNsTnA5U2VfSEkxcU9tN2ZXTFJyNmE1SFE9czk2LWMiLCJmaXJzdE5hbWUiOiJEYXZpZCBDIiwibGFzdE5hbWUiOiJDIiwiaWF0IjoxNjYxMTM1OTQ2LCJleHAiOjE2NjExNTc1NDZ9.7R06rVqlTK7lVzMGExHD1KJOouopuiTlX5S301QFr6I"
     now_utc = datetime.now(timezone.utc)
+    headers["recaptcha"] = "03ANYolqtJAUAwBHnjZiu-suovE5_ZyzjDpGpIKbPZIteFh6ObwA8WcPB4Xwyh-jIkr5EmnZQI52uvOWszHlv9qUkR87OrqFpUNvUeQL8nDK1W629vZzrzPj94wNCqRfcOCQ_QC8RySG0wM5HrVIfydDpy-P95iVWTA8f84NXvdCrhXCM_A2q0UIwrAiJyTm6P899CmekRcK6TCaU47BfLSEfLamWHOtmjLdOeJFKKTAihrZ1WIvqvGfFofOdUM2OQWn6wkrE2YQWU5VadXVdXbC_HOl9-wzYmgTK4_M-UdwP1vh4OsO0hE6Od5Ev7vBRvrGHnkGxxdt2UW-RSViprDM3Ml9LHVnZIZTh0n84uRsd8VuKBDn3RTW09qc_v-Pd3dJHgf_FMZ65Owq2bk7HnpiSfG1HSj5yPzD_lQrJ1X0kSU0BaRQs0cShZuADAvzVFI0mPWa6mFeSax6s32GKpEzSF86NbM0YD92W2lPdijdEWdbxtOD_sw8UIfd59gWofBYRuz_4ti78MaRLEojrp0oJRuo4na9lvGg"
     today = now_utc.strftime("%Y-%m-%d")
-    request_url = f"https://api.laevitas.ch/charts/futures/weighted_funding/{symbol}?start={today}&end={today}"
+    request_url = f"https://be.laevitas.ch/charts/futures/weighted_funding/{symbol}/?start={today}&end={today}"
     print(request_url)
-    resp = requests.get(request_url, headers=headers)
+    resp = requests.get(request_url, headers=headers, timeout=(5, 5))
     data = resp.json()
 
     # print(data)
